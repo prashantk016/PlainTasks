@@ -1,8 +1,17 @@
+# [PlanTasks](https://github.com/prashantk016/PlainTasks)
+
+---
+This is a **fork of [PlainTasks](https://github.com/aziz/PlainTasks)**: An opinionated to-do list plugin for [Sublime Text](https://www.sublimetext.com/) editor.
+All credits go to the original author [aziz](https://github.com/aziz).
+
+---
+# Original ReadMe below
+
+---
+
 ## [PlainTasks](https://github.com/aziz/PlainTasks) 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8d42f3e49d104ab8bf663392661b183b)](https://www.codacy.com/app/allen-bargi/PlainTasks?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=aziz/PlainTasks&amp;utm_campaign=Badge_Grade)
 
 An opinionated todo-list plugin for Sublime Text (2 & 3) editor
-![](http://cl.ly/image/1q100Q212o2Q/ss.png)
 
 ## Installation
 To install this plugin, you have two options:
