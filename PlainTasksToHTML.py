@@ -51,8 +51,8 @@ default_ccsl = [  # hand-made repr of tasks.hidden-tmTheme
     '.header { font-weight: bold; font-style: normal; color: #bc644a; background-color: rgba(0,0,0,.05); width: 100%; }',
     '.tag { font-weight: bold; font-style: normal; color: #C37763; }',
     '.tag-done, .tag-cancelled { font-style: normal; color:#A49F85; }',
-    '.tag-today, .tag-critical, .tag-high, .tag-low { font-weight: bold; font-style: normal; color: #000000; }',
-    '.tag-today { background: #EADD4E; } .tag-critical{ background: #FF0000; }',
+    '.tag-today, .tag-medium, .tag-high, .tag-low { font-weight: bold; font-style: normal; color: #000000; }',
+    '.tag-today { background: #EADD4E; } .tag-medium{ background: #FF0000; }',
     '.tag-high { background: #FF7F00; }',
     '.tag-low { background: #222222; color: #ffffff; }',
     '.done, .cancelled { color: #66654F; }',
@@ -79,7 +79,7 @@ scope_to_tag = {  # key is name of regex group, value is regex expression
     # TAGS
     '__tag':          r'(?:^|meta\.)tag(?:\.todo)?(?!\.)',
     '__tag_today':    r'(?:tag\.todo\.)?today(?!\.)',
-    '__tag_critical': r'(?:tag\.todo\.)?critical(?!\.)',
+    '__tag_medium': r'(?:tag\.todo\.)?medium(?!\.)',
     '__tag_high':     r'(?:tag\.todo\.)?high(?!\.)',
     '__tag_low':      r'(?:tag\.todo\.)?low(?!\.)',
     # SEPARATORS
@@ -197,8 +197,8 @@ class PlainTasksConvertToHtml(PlainTasksBase):
                         pending += '<span class="tag">%s</span>' % cgi.escape(self.view.substr(s))
                     elif 'tag.todo.today' in sn:
                         pending += '<span class="tag-today">%s</span>' % self.view.substr(s)
-                    elif 'tag.todo.critical' in sn:
-                        pending += '<span class="tag-critical">%s</span>' % self.view.substr(s)
+                    elif 'tag.todo.medium' in sn:
+                        pending += '<span class="tag-medium">%s</span>' % self.view.substr(s)
                     elif 'tag.todo.high' in sn:
                         pending += '<span class="tag-high">%s</span>' % self.view.substr(s)
                     elif 'tag.todo.low' in sn:

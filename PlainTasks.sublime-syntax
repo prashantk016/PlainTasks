@@ -19,7 +19,7 @@ contexts:
         4: punctuation.definition.bullet.completed.todo
         5: comment.line.completed.todo
         6: meta.tag.todo.completed
-    - match: '^\s*(?:(✘|❌|x|\[-\])(\s+(?:[^\@\n]|(?<!\s)\@|\@(?=\s))*)(.*))|^\s*(?:(-)(\s+(?:[^\@]|(?<!\s)\@|\@(?=\s))*)(.*\@cancelled(?=\s|\(|$)[^\n]*))'
+    - match: '^\s*(?:(✘|x|\[-\])(\s+(?:[^\@\n]|(?<!\s)\@|\@(?=\s))*)(.*))|^\s*(?:(-)(\s+(?:[^\@]|(?<!\s)\@|\@(?=\s))*)(.*\@cancelled(?=\s|\(|$)[^\n]*))'
       scope: meta.item.todo.cancelled
       captures:
         1: punctuation.definition.bullet.cancelled.todo
@@ -28,7 +28,7 @@ contexts:
         4: punctuation.definition.bullet.cancelled.todo
         5: text.cancelled.todo
         6: meta.tag.todo.cancelled
-    - match: '^\s*(?!-|\+|✓|✔|√|❍|❑|■|□|☐|▪|▫|–|—|≡|→|›|\[[\sx-]\]|＿|✘|❌|(x\s+))(?=\S)'
+    - match: '^\s*(?!-|\+|✓|✔|√|❍|❑|■|□|☐|▪|▫|–|—|≡|→|›|\[[\sx-]\]|＿|✘|(x\s+))(?=\S)'
       push:
         - meta_scope: notes.todo
         - match: $\n?
@@ -52,7 +52,7 @@ contexts:
         - include: today
         - include: low
         - include: high
-        - include: critical
+        - include: medium
     - match: ^＿+$
       scope: meta.punctuation.archive.todo
     - match: '^\s*---.{3,5}---+$'
@@ -67,9 +67,9 @@ contexts:
           captures:
             1: punctuation.definition.bold
           pop: true
-  critical:
-    - match: (?<=\s)\@critical|✭critical
-      scope: string.other.tag.todo.critical
+  medium:
+    - match: (?<=\s)\@medium|✭medium
+      scope: string.other.tag.todo.medium
   high:
     - match: (?<=\s)\@high|✭high
       scope: string.other.tag.todo.high
@@ -87,7 +87,7 @@ contexts:
     - match: (?<=\s)\@low|✭low
       scope: string.other.tag.todo.low
   tag:
-    - match: '(?<=\s)\@(?!(high|today|critical|low|completed|done)[\s\(])[\w\d\.\(\)\-!? :\+]+[ \t]*'
+    - match: '(?<=\s)\@(?!(high|today|medium|low|completed|done)[\s\(])[\w\d\.\(\)\-!? :\+]+[ \t]*'
       scope: meta.tag.todo
   today:
     - match: (?<=\s)\@today|✭ᴛᴏᴅᴀʏ

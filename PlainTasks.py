@@ -268,7 +268,7 @@ class PlainTasksSortByDueDateAndPriorityCommand(PlainTasksBase):
 
     def runCommand(self, edit, descending=False):
         due_re = r'^\s*[^\b]*?\s*@due\(([\d\w,\.:\-\/ @]*)\).*$'
-        critical_re = r'^\s*[^\b]*?\s*@critical\b.*$'
+        medium_re = r'^\s*[^\b]*?\s*@medium\b.*$'
         high_re = r'^\s*[^\b]*?\s*high\b.*$'
         low_re = r'^\s*[^\b]*?\s*@low\b.*$'
         regions = itertools.chain(*(reversed(self.view.lines(region)) for region in reversed(list(self.view.sel()))))
@@ -307,13 +307,13 @@ class PlainTasksSortByDueDateAndPriorityCommand(PlainTasksBase):
                         task.due = due_match.groups()[0]
 
                     task.priority = '3normal'
-                    critical_match = re.match(critical_re, line_contents, re.U)
+                    medium_match = re.match(medium_re, line_contents, re.U)
                     high_match = re.match(high_re, line_contents, re.U)
                     low_match = re.match(low_re, line_contents, re.U)
-                    if critical_match is not None:
-                        task.priority = '1critical'
-                    elif high_match is not None:
-                        task.priority = '2high'
+                    if high_match is not None:
+                        task.priority = '1high'
+                    elif medium_match is not None:
+                        task.priority = '2medium'
                     elif low_match is not None:
                         task.priority = '4low'
 
@@ -329,6 +329,70 @@ class PlainTasksSortByDueDateAndPriorityCommand(PlainTasksBase):
         PlainTasksStatsStatus.set_stats(self.view)
         self.view.run_command('plain_tasks_toggle_highlight_past_due')
 
+class PlainTasksSortByPriorityCommand(PlainTasksBase):
+    class Task:
+        pass
+
+    def is_visible(self):
+        return self.view.score_selector(0, "text.todo") > 0
+
+    def runCommand(self, edit, descending=False):
+        due_re = r'^\s*[^\b]*?\s*@due\(([\d\w,\.:\-\/ @]*)\).*$'
+        medium_re = r'^\s*[^\b]*?\s*@medium\b.*$'
+        high_re = r'^\s*[^\b]*?\s*high\b.*$'
+        low_re = r'^\s*[^\b]*?\s*@low\b.*$'
+        regions = itertools.chain(*(reversed(self.view.lines(region)) for region in reversed(list(self.view.sel()))))
+
+        for project in regions:
+            project_scope = self.view.scope_name(project.begin())
+            if not 'header' in project_scope:
+                continue
+            project_block = self.view.indented_region(project.end() + 1)
+            if project_block.empty():
+                continue
+            tasks = []
+            task = None
+            pos = project_block.begin()
+            first_task_pos = None
+            first_task_indentation = None
+
+            while pos < project_block.end():
+                line = self.view.line(pos)
+                line_contents = self.view.substr(line)
+                scope = self.view.scope_name(pos)
+                indentation = self.view.indentation_level(pos)
+
+                if scope == 'text.todo notes.todo ' and task is None:
+                    pass
+                elif ('item' in scope or 'header' in scope) and (task is None or first_task_indentation == indentation):
+                    task = self.Task()
+                    task.region = line
+                    if first_task_pos is None:
+                        first_task_pos = pos
+                        first_task_indentation = indentation
+
+                    task.priority = '3normal'
+                    medium_match = re.match(medium_re, line_contents, re.U)
+                    high_match = re.match(high_re, line_contents, re.U)
+                    low_match = re.match(low_re, line_contents, re.U)
+                    if high_match is not None:
+                        task.priority = '1high'
+                    elif medium_match is not None:
+                        task.priority = '2medium'
+                    elif low_match is not None:
+                        task.priority = '4low'
+
+                    tasks.append(task)
+                elif task is not None:
+                    task.region = sublime.Region(task.region.begin(), line.end())
+                pos = line.end() + 1
+            tasks.sort(key=lambda t: (t.priority), reverse=descending)
+            project_block = sublime.Region(first_task_pos, project_block.end())
+            new_content = '\n'.join([self.view.substr(t.region).rstrip() for t in tasks]) + '\n'
+            self.view.replace(edit, project_block, new_content)
+
+        PlainTasksStatsStatus.set_stats(self.view)
+        self.view.run_command('plain_tasks_toggle_highlight_past_due')
 
 class PlainTasksCancelCommand(PlainTasksBase):
     def runCommand(self, edit):
@@ -1064,29 +1128,29 @@ class PlainTasksAddGutterIconsForTags(sublime_plugin.EventListener):
     def on_activated(self, view):
         if not view.score_selector(0, "text.todo") > 0:
             return
-        view.erase_regions('critical')
+        view.erase_regions('medium')
         view.erase_regions('high')
         view.erase_regions('low')
         view.erase_regions('today')
-        icon_critical = view.settings().get('icon_critical', '')
+        icon_medium = view.settings().get('icon_medium', '')
         icon_high = view.settings().get('icon_high', '')
         icon_low = view.settings().get('icon_low', '')
         icon_today = view.settings().get('icon_today', '')
-        if not any((icon_critical, icon_high, icon_low, icon_today)):
+        if not any((icon_medium, icon_high, icon_low, icon_today)):
             return
 
-        critical = 'string.other.tag.todo.critical'
+        medium = 'string.other.tag.todo.medium'
         high = 'string.other.tag.todo.high'
         low = 'string.other.tag.todo.low'
         today = 'string.other.tag.todo.today'
-        r_critical = view.find_by_selector(critical)
+        r_medium = view.find_by_selector(medium)
         r_high = view.find_by_selector(high)
         r_low = view.find_by_selector(low)
         r_today = view.find_by_selector(today)
 
-        if not any((r_critical, r_high, r_low, r_today)):
+        if not any((r_medium, r_high, r_low, r_today)):
             return
-        view.add_regions('critical', r_critical, critical, icon_critical, sublime.HIDDEN)
+        view.add_regions('medium', r_medium, medium, icon_medium, sublime.HIDDEN)
         view.add_regions('high', r_high, high, icon_high, sublime.HIDDEN)
         view.add_regions('low', r_low, low, icon_low, sublime.HIDDEN)
         view.add_regions('today', r_today, today, icon_today, sublime.HIDDEN)
@@ -1175,7 +1239,7 @@ class PlainTasksGotoTag(sublime_plugin.TextCommand):
             [r for r in self.view.find_by_selector('meta.tag.todo')
              if not any(s in self.view.scope_name(r.a) for s in ('completed', 'cancelled'))
              ] +
-            self.view.find_by_selector('string.other.tag.todo.critical') +
+            self.view.find_by_selector('string.other.tag.todo.medium') +
             self.view.find_by_selector('string.other.tag.todo.high') +
             self.view.find_by_selector('string.other.tag.todo.low') +
             self.view.find_by_selector('string.other.tag.todo.today')
